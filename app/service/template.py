@@ -10,7 +10,12 @@ from app.model.template import CreatableModel, email_validator, phone_validator
 logger = logging.getLogger(__name__)
 
 
-async def date_converter(value):
+async def date_converter(value: str) -> datetime:
+    """
+    Конвертация строки в дату согласно допустим формата
+    :param value: входная строка, в которой предполагается дата
+    :return: дата в допустимом формате
+    """
     format_1 = '%d.%m.%Y'
     format_2 = '%Y-%m-%d'
     try:
@@ -26,7 +31,14 @@ async def date_converter(value):
             )
 
 
-async def modify_request_data_with_dates(data: dict):
+async def modify_request_data_with_dates(data: dict) -> dict:
+    """
+    Перебор входящих данных для нахождения полей с датами.
+    Если поле не содержит дату или содержит дату в плохом формате,
+    поле остается без изменений.
+    :param data: набор входящих данных
+    :return: набор полей для сравнения с шаблонами.
+    """
     logger.info('Пересобираем данные из входящих для работы с датами')
     data_with_dates = dict()
     for key, value in data.items():
@@ -37,7 +49,13 @@ async def modify_request_data_with_dates(data: dict):
     return data_with_dates
 
 
-async def get_templates_from_db():
+async def get_templates_from_db() -> list:
+    """
+    Получение всех имеющихся шаблонов из базы данных.
+    На основе шаблонов в бд динамически генерируются pydantic-модели.
+    :return: список pydantic-моделей для валидации входных данных,
+    отсортированный по количеству полей.
+    """
     logger.info('Идем в базу за имеющимися шаблонами')
     db_client = motor.motor_asyncio.AsyncIOMotorClient(settings.mongo_uri)
     db = db_client[settings.mongo_database]
@@ -57,7 +75,14 @@ async def get_templates_from_db():
     return models
 
 
-async def find_template_match(data, models):
+async def find_template_match(data: dict, models: list) -> str:
+    """
+    Попытка преобразовать входящие данные в pydantic-модели.
+    Первая модель, не выбросившая исключения, признается подходящей.
+    :param data: подготовленные входящие данные (список полей)
+    :param models: pydantic-модели на основе документов бд (шаблоны)
+    :return: имя шаблона из базы данных
+    """
     template_name = None
     for model in models:
         try:
@@ -76,7 +101,13 @@ TYPES = {
 }
 
 
-async def define_input_data_types(data):
+async def define_input_data_types(data: dict) -> dict:
+    """
+    Создание описания входящих данных, не подошедших
+    ни к одному шаблону.
+    :param data: подготовленные входящие данные
+    :return: словарь с описанием полей.
+    """
     result = dict()
     for key, value in data.items():
         if isinstance(value, datetime):

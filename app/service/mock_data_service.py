@@ -5,7 +5,10 @@ import motor.motor_asyncio
 from app.core.config import settings
 
 
-async def generate_mock_templates():
+async def generate_mock_templates() -> None:
+    """
+    Функция для создания тестового набора шаблонов в бд.
+    """
     db_client = motor.motor_asyncio.AsyncIOMotorClient(settings.mongo_uri)
     db = db_client[settings.mongo_database]
     collection = db[settings.mongo_collection]

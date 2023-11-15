@@ -1,0 +1,79 @@
+{
+	"info": {
+		"_postman_id": "18cd796a-e8e2-44b9-a73d-f027eed424a0",
+		"name": "ecom-test",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "30026574"
+	},
+	"item": [
+		{
+			"name": "get_form",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"current_date\": \"2023-11-23\",\n    \"number\": 1,\n    \"phone\": \"+7 925 562 98 82\",\n    \"em\": \"sh@sh.sh\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{baseUrl}}/get_form",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"get_form"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "generate",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/generate",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"generate"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost"
+		}
+	]
+}

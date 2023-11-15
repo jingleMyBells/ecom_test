@@ -10,14 +10,13 @@ from app.service.template import (
 )
 from app.service.mock_data_service import generate_mock_templates
 
-import motor.motor_asyncio
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
 
 
 @router.post('/get_form')
-async def get_form(request: Request):
+async def get_form(request: Request) -> dict:
     """Эндпоинт поиска шаблона."""
     models = await get_templates_from_db()
     request_data = await request.json()
@@ -36,22 +35,8 @@ async def get_form(request: Request):
 
 
 @router.post('/generate')
-async def generate_template():
+async def generate_template() -> str:
     """Эндпоинт генерации тестовых данных."""
     logger.info('Генерируем тестовые данные в монге')
     await generate_mock_templates()
     return 'Тестовые шаблоны созданы'
-
-
-MONGO_DETAILS = 'mongodb://localhost:27017'
-
-
-@router.get('/get_templates')
-async def get_all_templates():
-    db_client = motor.motor_asyncio.AsyncIOMotorClient(MONGO_DETAILS)
-    db = db_client['ecom']
-    collection = db['templates']
-    cursor = collection.find()
-    for doc in await cursor.to_list(length=1000):
-        print(doc)
-    return 'test ok'

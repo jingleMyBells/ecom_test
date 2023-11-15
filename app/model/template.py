@@ -6,14 +6,14 @@ from pydantic.v1.class_validators import Validator
 from pydantic.v1.fields import ModelField
 
 
-def phone_validator(v):
+def phone_validator(v: str) -> str:
     regex = r'^((8|\+7)[\- ]?)?(\(?\d{3}\)?[\- ]?)?[\d\- ]{7,10}$'
     if re.match(regex, v):
         return v
     raise ValueError('phone is incorrect')
 
 
-def email_validator(v):
+def email_validator(v: str) -> str:
     regex = (r'^[a-z0-9!#$%&"*+/=?^_`{|}~-]+'
              r'(?:\.[a-z0-9!#$%&"*+/=?^_`{|}~'
              r'-]+)*@(?:[a-z0-9](?:[a-z0-9-]*'
@@ -42,7 +42,7 @@ class CreatableModel(BaseModel):
     """
 
     @classmethod
-    async def add_fields(cls, **field_definitions: Any):
+    async def add_fields(cls, **field_definitions: Any) -> None:
         new_fields: Dict[str, ModelField] = {}
         new_annotations: Dict[str, Optional[type]] = {}
 
