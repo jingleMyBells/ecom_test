@@ -1,14 +1,12 @@
 from typing import Any, Dict, Optional
 import re
-from datetime import datetime, date
 
-from pydantic.v1.fields import ModelField
-from pydantic.v1 import BaseModel, validator, ConfigDict
+from pydantic.v1 import BaseModel
 from pydantic.v1.class_validators import Validator
+from pydantic.v1.fields import ModelField
 
 
 def phone_validator(v):
-    print("PHONE_VALIDATION")
     regex = r'^((8|\+7)[\- ]?)?(\(?\d{3}\)?[\- ]?)?[\d\- ]{7,10}$'
     if re.match(regex, v):
         return v
@@ -16,7 +14,6 @@ def phone_validator(v):
 
 
 def email_validator(v):
-    print("EMAIL_VALIDATION")
     regex = (r'^[a-z0-9!#$%&"*+/=?^_`{|}~-]+'
              r'(?:\.[a-z0-9!#$%&"*+/=?^_`{|}~'
              r'-]+)*@(?:[a-z0-9](?:[a-z0-9-]*'
@@ -37,6 +34,12 @@ TYPES_VALIDATORS = {
 
 
 class CreatableModel(BaseModel):
+    """
+    Модель для выгрузки шаблонов из базы данных.
+    Добавлен метод для наполнения модели полями нужных типов данных.
+    Типы данных соответствуют базовым для Монги,
+    снабжены кастомными валидаторами.
+    """
 
     @classmethod
     async def add_fields(cls, **field_definitions: Any):
@@ -63,7 +66,9 @@ class CreatableModel(BaseModel):
 
             for key in TYPES_VALIDATORS.keys():
                 if key.lower() in f_name.lower():
-                    class_validators = {'validate_always': TYPES_VALIDATORS.get(key)}
+                    class_validators = {
+                        'validate_always': TYPES_VALIDATORS.get(key)
+                    }
                     break
 
             new_fields[f_name] = ModelField.infer(

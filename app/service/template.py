@@ -1,12 +1,13 @@
 from datetime import datetime
+import logging
 
 import motor.motor_asyncio
 from pydantic.v1 import create_model
 
+from app.core.config import settings
 from app.model.template import CreatableModel, email_validator, phone_validator
 
-
-MONGO_DETAILS = 'mongodb://localhost:27017'
+logger = logging.getLogger(__name__)
 
 
 async def date_converter(value):
@@ -14,17 +15,19 @@ async def date_converter(value):
     format_2 = '%Y-%m-%d'
     try:
         date_value = datetime.strptime(value, format_1)
-        print("SHOULD WORK HERE")
         return date_value
     except (ValueError, TypeError):
         try:
             date_value = datetime.strptime(value, format_2)
             return date_value
         except (ValueError, TypeError):
-            raise ValueError('Данные не соответствуют приемлемым форрматам даты')
+            raise ValueError(
+                'Данные не соответствуют приемлемым форрматам даты'
+            )
 
 
 async def modify_request_data_with_dates(data: dict):
+    logger.info('Пересобираем данные из входящих для работы с датами')
     data_with_dates = dict()
     for key, value in data.items():
         try:
@@ -35,9 +38,10 @@ async def modify_request_data_with_dates(data: dict):
 
 
 async def get_templates_from_db():
-    db_client = motor.motor_asyncio.AsyncIOMotorClient(MONGO_DETAILS)
-    db = db_client['ecom']
-    collection = db['templates']
+    logger.info('Идем в базу за имеющимися шаблонами')
+    db_client = motor.motor_asyncio.AsyncIOMotorClient(settings.mongo_uri)
+    db = db_client[settings.mongo_database]
+    collection = db[settings.mongo_collection]
     cursor = collection.find()
     models = []
     for doc in await cursor.to_list(length=1000):
@@ -57,13 +61,14 @@ async def find_template_match(data, models):
     template_name = None
     for model in models:
         try:
-            obj = model(**data)
+            model(**data)
             template_name = model.__name__
             break
         except Exception as e:
-            print(e)
+            logger.info(e)
             continue
     return template_name
+
 
 TYPES = {
     'phone': phone_validator,
@@ -75,26 +80,27 @@ async def define_input_data_types(data):
     result = dict()
     for key, value in data.items():
         if isinstance(value, datetime):
+            logger.info('Поле содержит дату')
             result[key] = value.__class__.__name__.upper()
-            break
+            continue
         for type_key, type_value in TYPES.items():
             try:
+                logger.info(f'Определяем, является ли поле {type_key}')
                 validation_result = type_value(value)
                 if validation_result is not None:
                     result[key] = type_key.upper()
                     break
             except Exception as e:
-                print("HERE")
-                print(e)
+                logger.info(e)
                 continue
         if result.get(key) is None:
             if isinstance(value, str):
+                logger.info('Поле содержит текст')
                 result[key] = 'TEXT'
             else:
+                logger.info('Поле содержит что-то неподходящее')
                 result[key] = (f'{value.__class__.__name__.upper()}, '
                                f'данный тип данных не поддержан ни в '
                                f'одном из шаблонов')
 
     return result
-
-

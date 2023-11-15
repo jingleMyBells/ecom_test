@@ -1,0 +1,32 @@
+version: '3.3'
+
+services:
+
+  db:
+    image: mongo:latest
+    volumes:
+      - mongo:/data/db
+    env_file:
+      - ./.env
+
+  backend:
+    build:
+      context: ../
+      dockerfile: Dockerfile
+    restart: always
+    depends_on:
+      - db
+    env_file:
+      - ./.env
+
+  nginx:
+    image: nginx:1.19.3
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - backend
+
+volumes:
+    mongo:

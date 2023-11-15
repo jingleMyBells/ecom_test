@@ -1,3 +1,5 @@
+import logging
+
 from fastapi import APIRouter, Request
 
 from app.service.template import (
@@ -10,11 +12,13 @@ from app.service.mock_data_service import generate_mock_templates
 
 import motor.motor_asyncio
 
+logger = logging.getLogger(__name__)
 router = APIRouter()
 
 
 @router.post('/get_form')
 async def get_form(request: Request):
+    """Эндпоинт поиска шаблона."""
     models = await get_templates_from_db()
     request_data = await request.json()
     request_data_with_date = await modify_request_data_with_dates(request_data)
@@ -24,15 +28,17 @@ async def get_form(request: Request):
     )
 
     if template_name is None:
-        print('Не нашлось модели')
+        logger.info('Подходящий шаблон не найден')
         return await define_input_data_types(request_data_with_date)
     else:
-        print(f'Модель нашлась, ее имя: {template_name}')
+        logger.info(f'Модель нашлась, ее имя: {template_name}')
         return {'Имя искомого шаблона': template_name}
 
 
 @router.post('/generate')
 async def generate_template():
+    """Эндпоинт генерации тестовых данных."""
+    logger.info('Генерируем тестовые данные в монге')
     await generate_mock_templates()
     return 'Тестовые шаблоны созданы'
 

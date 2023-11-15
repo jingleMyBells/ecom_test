@@ -1,0 +1,5 @@
+APP_TITLE=Тестовое задание e.Com
+APP_DESCRIPTION=Сервис для проверки входящих данных на соответствие шаблонам в бд
+MONGO_URI=mongodb://localhost:27017
+MONGO_DATABASE=ecom
+MONGO_COLLECTION=templates

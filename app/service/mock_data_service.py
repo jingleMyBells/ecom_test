@@ -2,14 +2,13 @@ from datetime import datetime
 
 import motor.motor_asyncio
 
-
-MONGO_DETAILS = 'mongodb://localhost:27017'
+from app.core.config import settings
 
 
 async def generate_mock_templates():
-    db_client = motor.motor_asyncio.AsyncIOMotorClient(MONGO_DETAILS)
-    db = db_client['ecom']
-    collection = db['templates']
+    db_client = motor.motor_asyncio.AsyncIOMotorClient(settings.mongo_uri)
+    db = db_client[settings.mongo_database]
+    collection = db[settings.mongo_collection]
 
     template_1 = {
         'name': 'EmailForm',
