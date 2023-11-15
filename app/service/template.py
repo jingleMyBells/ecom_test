@@ -1,6 +1,7 @@
 from datetime import datetime
 import logging
 
+from fastapi import Request
 import motor.motor_asyncio
 from pydantic.v1 import create_model
 
@@ -135,3 +136,21 @@ async def define_input_data_types(data: dict) -> dict:
                                f'одном из шаблонов')
 
     return result
+
+
+async def transform_request_to_data(request: Request) -> dict:
+    """
+    Проверка где лежат данные (в теле или в параметрах),
+    формирование словаря с данными для обработки.
+    :param request: входящий запрос
+    :return: словарь с данными для дальнейшей обработки
+    """
+    if await request.body() != b'':
+        result = dict()
+        json = await request.json()
+        items = json.split('&')
+        for item in items:
+            parts = item.split('=')
+            result[parts[0]] = parts[1]
+        return result
+    return request.query_params._dict
